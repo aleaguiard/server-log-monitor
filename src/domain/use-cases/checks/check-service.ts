@@ -1,4 +1,3 @@
-import { log } from 'console';
 import { LogRepository } from '../../repository/log.repository';
 import { LogEntity, LogSeverityLevel } from '../../entities/log.entity';
 interface CheckServiceUseCase {

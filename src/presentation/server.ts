@@ -10,12 +10,12 @@ export class Server {
 	public static start() {
 		const emailService = new EmailService();
 		const emailOptions = {
-			to: 'Lorem Ipsum <lorem@ipsum.com>',
+			to: 'lorem@ipsum.com',
 			subject: 'Logs server',
 			htmlBody: `<h1>Logs server info</h1>
 			<p>See logs server here</p>`,
 		};
-		emailService.sendEmail(emailOptions);
+		emailService.sendEmailWithFileSystemLogs(emailOptions.to);
 
 		console.log('Server running...');
 		CronService.createJob('*/5 * * * * *', () => {
