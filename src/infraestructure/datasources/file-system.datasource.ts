@@ -1,4 +1,3 @@
-import { log } from 'console';
 import { LogDatasource } from '../../domain/datasources/log.datasource';
 import { LogEntity, LogSeverityLevel } from '../../domain/entities/log.entity';
 import * as fs from 'fs';
@@ -6,6 +5,7 @@ import * as fs from 'fs';
 export class FileSystemDatasource implements LogDatasource {
 	private readonly logPath: string = 'logs/';
 	private readonly allLogsPath: string = 'logs/logs-all.log';
+	private readonly lowLogsPath: string = 'logs/logs-low.log';
 	private readonly mediumLogsPath: string = 'logs/logs-medium.log';
 	private readonly highLogsPath: string = 'logs/logs-high.log';
 
@@ -17,11 +17,13 @@ export class FileSystemDatasource implements LogDatasource {
 		if (!fs.existsSync(this.logPath)) {
 			fs.mkdirSync(this.logPath);
 		}
-		[this.allLogsPath, this.mediumLogsPath, this.highLogsPath].forEach((path) => {
-			if (!fs.existsSync(path)) return;
-
-			fs.writeFileSync(path, '');
-		});
+		[this.allLogsPath, this.mediumLogsPath, this.highLogsPath, this.lowLogsPath].forEach(
+			(path) => {
+				if (!fs.existsSync(path)) {
+					fs.writeFileSync(path, '');
+				}
+			}
+		);
 	}
 
 	async saveLog(newlog: LogEntity): Promise<void> {
@@ -29,7 +31,10 @@ export class FileSystemDatasource implements LogDatasource {
 
 		fs.appendFileSync(this.allLogsPath, logAsJson);
 
-		if (newlog.level === LogSeverityLevel.low) return;
+		if (newlog.level === LogSeverityLevel.low) {
+			fs.appendFileSync(this.lowLogsPath, logAsJson);
+			return;
+		}
 
 		if (newlog.level === LogSeverityLevel.medium) {
 			fs.appendFileSync(this.mediumLogsPath, logAsJson);
