@@ -10,21 +10,20 @@ const emailService = new EmailService();
 
 export class Server {
 	public static start() {
-		new SendEmailLogs(emailService, fileSystemLogRepository).execute('lorem@ipsum.com');
-
-		// console.log('Server running...');
-		// CronService.createJob('*/5 * * * * *', () => {
+		/* Send email with logs when server is down **/
+		// new SendEmailLogs(emailService, fileSystemLogRepository).execute('lorem@ipsum.com');
+		/* Check if server is up every 5 minutes **/
+		//  CronService.createJob('*/5 * * * * *', () => {
 		// 	const url = 'http://localhost:3000';
 		// 	new CheckService(
 		// 		fileSystemLogRepository,
 		// 		() => {
 		// 			console.log(`${url} is up!`);
 		// 		},
-
 		// 		(error) => {
 		// 			console.log(`${url} is down!`);
 		// 		}
-		// 	).execute(url);
-		// });
+		//  	).execute(url);
+		//  });
 	}
 }
