@@ -1,3 +1,4 @@
+import { PrismaClient } from '@prisma/client';
 import { MongoDatabase } from './data/mongo/init';
 import { LogModel } from './data/mongo/models/log.model';
 import { Server } from './presentation/server';
@@ -17,6 +18,15 @@ async function main() {
 	await MongoDatabase.connect({
 		mongoUrl,
 		dbName,
+	});
+
+	const prisma = new PrismaClient();
+	const newLog = await prisma.logModel.create({
+		data: {
+			level: 'medium',
+			message: 'Hello from Prisma!',
+			origin: 'Prisma',
+		},
 	});
 
 	Server.start();
