@@ -3,23 +3,87 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Log Monitor</title>
+		<title>Website Monitor</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				background-color: #f4f4f9;
+				margin: 0;
+				padding: 0;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 100vh;
+			}
+			.container {
+				background: #fff;
+				padding: 2rem;
+				border-radius: 8px;
+				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+				max-width: 500px;
+				width: 100%;
+			}
+			h1 {
+				margin-bottom: 1rem;
+				color: #333;
+			}
+			label {
+				display: block;
+				margin-bottom: 0.5rem;
+				color: #555;
+			}
+			input,
+			select,
+			button {
+				width: 100%;
+				padding: 0.8rem;
+				margin-bottom: 1rem;
+				border: 1px solid #ccc;
+				border-radius: 4px;
+			}
+			button {
+				background-color: #007bff;
+				color: #fff;
+				border: none;
+				cursor: pointer;
+				font-size: 1rem;
+			}
+			button:hover {
+				background-color: #0056b3;
+			}
+			.alert {
+				padding: 1rem;
+				border-radius: 4px;
+				margin-top: 1rem;
+			}
+			.alert-success {
+				background-color: #d4edda;
+				color: #155724;
+			}
+			.alert-error {
+				background-color: #f8d7da;
+				color: #721c24;
+			}
+		</style>
 	</head>
 	<body>
-		<h1>Log Monitor</h1>
-		<form id="logForm">
-			<label for="url">URL:</label>
-			<input type="text" id="url" name="url" required />
-			<br />
-			<label for="logMethod">Log Method:</label>
-			<select id="logMethod" name="logMethod" required>
-				<option value="mongo">Mongo</option>
-				<option value="postgres">Postgres</option>
-				<option value="filesystem">File System</option>
-			</select>
-			<br />
-			<button type="submit">Send Log</button>
-		</form>
+		<div class="container">
+			<h1>Website Monitor</h1>
+			<form id="logForm">
+				<label for="url">Website URL:</label>
+				<input type="text" id="url" name="url" required placeholder="Enter Website URL" />
+
+				<label for="logMethod">Log Method:</label>
+				<select id="logMethod" name="logMethod" required>
+					<option value="mongo">Mongo</option>
+					<option value="postgres">Postgres</option>
+					<option value="filesystem">File System</option>
+				</select>
+
+				<button type="submit">Send Log</button>
+				<div id="message" class="alert"></div>
+			</form>
+		</div>
 
 		<script>
 			document.getElementById('logForm').addEventListener('submit', async function (event) {
@@ -27,9 +91,7 @@
 
 				const url = document.getElementById('url').value;
 				const logMethod = document.getElementById('logMethod').value;
-
-				console.log('URL:', url);
-				console.log('Log Method:', logMethod);
+				const messageElement = document.getElementById('message');
 
 				try {
 					const response = await fetch('http://localhost:3000/log', {
@@ -40,12 +102,12 @@
 						body: JSON.stringify({ url, logMethod }),
 					});
 
-					console.log('Response status:', response.status);
 					const result = await response.text();
-					alert(result);
+					messageElement.textContent = result;
+					messageElement.className = 'alert alert-success';
 				} catch (error) {
-					console.error('Error:', error);
-					alert(`Error sending log: ${error.message}`);
+					messageElement.textContent = `Error sending log: ${error}`;
+					messageElement.className = 'alert alert-error';
 				}
 			});
 		</script>
