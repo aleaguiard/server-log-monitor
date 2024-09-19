@@ -1,33 +1,13 @@
-import { PrismaClient } from '@prisma/client';
-import { MongoDatabase } from './data/mongo/init';
-import { LogModel } from './data/mongo/models/log.model';
+import { DatabaseManager } from './config/database';
 import { Server } from './presentation/server';
 
 (async () => {
-	main();
-})();
-
-async function main() {
-	const mongoUrl = process.env.MONGO_URL;
-	const dbName = process.env.MONGO_DB_NAME;
-
-	if (!mongoUrl || !dbName) {
-		throw new Error('Environment variables MONGO_URL or MONGO_DB_NAME are missing');
+	try {
+		await DatabaseManager.initializeMongo();
+		await DatabaseManager.initializePostgres();
+		await Server.start();
+	} catch (error) {
+		console.error(`Failed to start server: ${error}`);
+		process.exit(1);
 	}
-
-	await MongoDatabase.connect({
-		mongoUrl,
-		dbName,
-	});
-
-	const prisma = new PrismaClient();
-	const newLog = await prisma.logModel.create({
-		data: {
-			level: 'medium',
-			message: 'Hello from Prisma!',
-			origin: 'Prisma',
-		},
-	});
-
-	Server.start();
-}
+})();

@@ -1,44 +1,64 @@
-import { CronService } from './cron/cron-service';
-import { CheckService } from '../domain/use-cases/checks/check-service';
+import express from 'express';
+import path from 'path';
 import { LogRepositoryImpl } from '../infraestructure/repositories/log.repositoty.impl';
 import { FileSystemDatasource } from '../infraestructure/datasources/file-system.datasource';
-import { EmailService } from './email/email.service';
-import { SendEmailLogs } from '../domain/use-cases/email/send-email-logs';
 import { MongoLogDatasource } from '../infraestructure/datasources/mongo-log.datasource';
 import { PostgresLogDatasource } from '../infraestructure/datasources/postgres-log.datasource';
-import { CheckServiceMultiple } from '../domain/use-cases/checks/check-service-multi';
+import { LogEntity, LogSeverityLevel } from '../domain/entities/log.entity';
+import cors from 'cors';
 
-const monoLogRepository = new LogRepositoryImpl(
-	//new FileSystemDatasource()
-	//new MongoLogDatasource()
-	new PostgresLogDatasource()
-);
+const app = express();
+app.use(express.static(path.join(__dirname, '../../public')));
+app.use(express.json());
+app.use(cors());
 
-// multi-datasource
-const fslogRepository = new LogRepositoryImpl(new FileSystemDatasource());
-const mongoRepository = new LogRepositoryImpl(new MongoLogDatasource());
-const postgresRepository = new LogRepositoryImpl(new PostgresLogDatasource());
+const logRepositories = {
+	mongo: new LogRepositoryImpl(new MongoLogDatasource()),
+	postgres: new LogRepositoryImpl(new PostgresLogDatasource()),
+	filesystem: new LogRepositoryImpl(new FileSystemDatasource()),
+};
 
-const emailService = new EmailService();
+function getLogRepository(logMethod: string) {
+	if (logMethod === 'mongo') return logRepositories.mongo;
+	if (logMethod === 'postgres') return logRepositories.postgres;
+	if (logMethod === 'filesystem') return logRepositories.filesystem;
+
+	throw new Error('Método de log inválido');
+}
+
+app.post('/log', async (req, res) => {
+	const { url, logMethod } = req.body;
+
+	try {
+		if (!url || !logMethod) {
+			return res.status(400).send('URL o método de log faltante');
+		}
+
+		let severity = LogSeverityLevel.high;
+
+		try {
+			const response = await fetch(url);
+			severity = response.ok ? LogSeverityLevel.low : LogSeverityLevel.high;
+		} catch {}
+
+		const logRepository = getLogRepository(logMethod);
+
+		const newLog = new LogEntity({
+			level: severity,
+			message: `Checked URL: ${url}`,
+			origin: 'Frontend',
+		});
+
+		await logRepository.saveLog(newLog);
+
+		return res.status(200).send(`Log guardado correctamente en ${logMethod}`);
+	} catch (error) {
+		return res.status(500).send(`Error al procesar la URL: ${error}`);
+	}
+});
 
 export class Server {
-	public static start() {
-		/* Send email with logs when server is down **/
-		// new SendEmailLogs(emailService, fileSystemLogRepository).execute('lorem@ipsum.com');
-
-		/* Check if server is up every 5 minutes **/
-
-		CronService.createJob('*/5 * * * * *', () => {
-			const url = 'http://localhost:3000';
-			new CheckServiceMultiple(
-				[fslogRepository, mongoRepository, postgresRepository],
-				() => {
-					console.log(`${url} is up!`);
-				},
-				(error) => {
-					console.log(`${url} is down!`);
-				}
-			).execute(url);
-		});
+	public static async start() {
+		app.listen(3000);
 	}
 }

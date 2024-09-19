@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Log Monitor</title>
+	</head>
+	<body>
+		<h1>Log Monitor</h1>
+		<form id="logForm">
+			<label for="url">URL:</label>
+			<input type="text" id="url" name="url" required />
+			<br />
+			<label for="logMethod">Log Method:</label>
+			<select id="logMethod" name="logMethod" required>
+				<option value="mongo">Mongo</option>
+				<option value="postgres">Postgres</option>
+				<option value="filesystem">File System</option>
+			</select>
+			<br />
+			<button type="submit">Send Log</button>
+		</form>
+
+		<script>
+			document.getElementById('logForm').addEventListener('submit', async function (event) {
+				event.preventDefault();
+
+				const url = document.getElementById('url').value;
+				const logMethod = document.getElementById('logMethod').value;
+
+				console.log('URL:', url);
+				console.log('Log Method:', logMethod);
+
+				try {
+					const response = await fetch('http://localhost:3000/log', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ url, logMethod }),
+					});
+
+					console.log('Response status:', response.status);
+					const result = await response.text();
+					alert(result);
+				} catch (error) {
+					console.error('Error:', error);
+					alert(`Error sending log: ${error.message}`);
+				}
+			});
+		</script>
+	</body>
+</html>
