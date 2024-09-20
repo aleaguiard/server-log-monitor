@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Website Monitor</title>
+		<title>Web Monitor</title>
 		<style>
 			body {
 				font-family: Arial, sans-serif;
@@ -68,10 +68,10 @@
 	</head>
 	<body>
 		<div class="container">
-			<h1>Website Monitor</h1>
+			<h1>Web Monitor</h1>
 			<form id="logForm">
-				<label for="url">Website URL:</label>
-				<input type="text" id="url" name="url" required placeholder="Enter Website URL" />
+				<label for="url">URL:</label>
+				<input type="text" id="url" name="url" required placeholder="Enter URL" />
 
 				<label for="logMethod">Log Method:</label>
 				<select id="logMethod" name="logMethod" required>
@@ -79,6 +79,17 @@
 					<option value="postgres">Postgres</option>
 					<option value="filesystem">File System</option>
 				</select>
+
+				<label for="cronFrequency">Cron Frequency:</label>
+				<select id="cronFrequency" name="cronFrequency" required>
+					<option value="none">No Schedule</option>
+					<option value="everyMinute">Every Minute</option>
+					<option value="every5Minutes">Every 5 Minutes</option>
+					<option value="everyHour">Every Hour</option>
+				</select>
+
+				<label for="email">Email for notifications:</label>
+				<input type="email" id="email" name="email" placeholder="Enter your email" />
 
 				<button type="submit">Send Log</button>
 				<div id="message" class="alert"></div>
@@ -91,6 +102,8 @@
 
 				const url = document.getElementById('url').value;
 				const logMethod = document.getElementById('logMethod').value;
+				const cronFrequency = document.getElementById('cronFrequency').value;
+				const email = document.getElementById('email').value;
 				const messageElement = document.getElementById('message');
 
 				try {
@@ -99,14 +112,18 @@
 						headers: {
 							'Content-Type': 'application/json',
 						},
-						body: JSON.stringify({ url, logMethod }),
+						body: JSON.stringify({ url, logMethod, cronFrequency, email }),
 					});
 
 					const result = await response.text();
 					messageElement.textContent = result;
 					messageElement.className = 'alert alert-success';
+
+					setTimeout(() => {
+						messageElement.textContent = '';
+					}, 10000);
 				} catch (error) {
-					messageElement.textContent = `Error sending log: ${error}`;
+					messageElement.textContent = `Error sending log: ${error.message}`;
 					messageElement.className = 'alert alert-error';
 				}
 			});
