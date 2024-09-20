@@ -49,7 +49,6 @@ export class EmailService {
 		const attachments: Attachement[] = [
 			{ filename: 'logs-all.log', path: './logs/logs-all.log' },
 			{ filename: 'logs-low.log', path: './logs/logs-low.log' },
-			{ filename: 'logs-medium.log', path: './logs/logs-medium.log' },
 			{ filename: 'logs-high.log', path: './logs/logs-high.log' },
 		];
 		return this.sendEmail({ to, subject, htmlBody, attachments });

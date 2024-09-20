@@ -24,7 +24,7 @@ export class LogService {
 		const log = new LogEntity({
 			level: severity,
 			message: `Checked URL: ${url}`,
-			origin: 'Frontend',
+			origin: 'Website APP',
 		});
 
 		await this.logRepository.saveLog(log);
@@ -38,9 +38,5 @@ export class LogService {
 					   <p>Severity: ${severity}</p>
 					   <p>Website is ${severity === LogSeverityLevel.low ? 'up' : 'down'}</p>`,
 		});
-
-		if (!emailSent) {
-			console.error('Error sending email notification');
-		}
 	}
 }
