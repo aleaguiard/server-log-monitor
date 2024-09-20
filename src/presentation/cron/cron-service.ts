@@ -1,12 +1,19 @@
-import { CronJob } from 'cron';
+import cron from 'node-cron';
 
-type CronTime = string | Date;
-type OnTick = () => void;
+export class CronJobScheduler {
+	private static cronPatterns: { [key: string]: string } = {
+		everyMinute: '* * * * *',
+		every5Minutes: '*/5 * * * *',
+		everyHour: '0 * * * *',
+	};
 
-export class CronService {
-	public static createJob(cronTime: CronTime, onTick: OnTick) {
-		const job = new CronJob(cronTime, onTick);
-		job.start();
-		return job;
+	public static schedule(cronFrequency: string, job: () => void) {
+		const cronPattern = this.cronPatterns[cronFrequency];
+
+		if (!cronPattern) {
+			throw new Error('Invalid cron frequency');
+		}
+
+		cron.schedule(cronPattern, job);
 	}
 }
